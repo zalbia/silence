@@ -8,6 +8,8 @@ lazy val library =
     object Version {
       val zio = "1.0.3"
       val zioConfig = "1.0.0-RC31"
+      val zioNio = "1.0.0-RC10"
+      val zioPrelude = "1.0.0-RC1"
     }
 
     val zio = "dev.zio" %% "zio" % Version.zio
@@ -16,6 +18,8 @@ lazy val library =
 
     val zioConfig = "dev.zio" %% "zio-config" % Version.zioConfig
     val zioConfigMagnolia = "dev.zio" %% "zio-config-magnolia" % Version.zioConfig
+    val zioNio = "dev.zio" %% "zio-nio" % Version.zioNio
+    val zioPrelude = "dev.zio" %% "zio-prelude" % Version.zioPrelude
   }
 
 // *****************************************************************************
@@ -31,6 +35,8 @@ lazy val root =
         library.zio,
         library.zioConfig,
         library.zioConfigMagnolia,
+        library.zioNio,
+        library.zioPrelude,
         library.zioTest % Test,
         library.zioTestSbt % Test
       ),
