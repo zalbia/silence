@@ -38,7 +38,8 @@ object Arguments {
 
   private def checkPath(implicit args: Int => Option[String]) =
     args(0) match {
-      case None => ZIO.fail("Missing path to silence XML file")
+      case None =>
+        ZIO.fail("Missing path to silence XML file")
       case Some(pathStr) =>
         val path = Path(pathStr)
         Files

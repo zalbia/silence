@@ -13,19 +13,17 @@ object Main extends App {
     (for {
       arguments <- Arguments.from(args)
       _         <- putStrLn(arguments.toString)
-    } yield ())
-      .foldM(
-        es =>
-          for {
-            _ <- putStrLnErr("Errors:")
-            _ <- putStrLnErr(es.mkString("\n"))
-            _ <- putStrLnErr("\nFormat:")
-            _ <- putStrLnErr(
-                  "<path-to-xml> <chapter-silence-duration>" +
-                    " <partition-threshold-duration> <part-silence-duration>"
-                )
-            _ <- putStrLnErr("where duration is an ISO 8601 duration string")
-          } yield (),
-        _ => ZIO.unit
-      )
+    } yield ()).foldM(handleErrors, _ => ZIO.unit)
+
+  private def handleErrors(errors: Iterable[String]) =
+    for {
+      _ <- putStrLnErr("Errors:")
+      _ <- putStrLnErr(errors.mkString("\n"))
+      _ <- putStrLnErr("\nFormat:")
+      _ <- putStrLnErr(
+            "<path-to-xml> <chapter-silence-duration>" +
+              " <partition-threshold-duration> <part-silence-duration>"
+          )
+      _ <- putStrLnErr("where duration is an ISO 8601 duration string")
+    } yield ()
 }
