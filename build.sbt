@@ -55,7 +55,7 @@ lazy val commonSettings =
   Seq(
     name := "beat-tech-silence",
     scalaVersion := "2.13.4",
-    organization := "com.example"
+    organization := "com.github.zalbia"
   )
 
 lazy val commandAliases =
@@ -80,8 +80,7 @@ lazy val stdOptions = Seq(
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
   "-unchecked",
-  "-deprecation",
-  "-Xfatal-warnings"
+  "-deprecation"
 )
 
 lazy val stdOpts213 = Seq(
