@@ -15,7 +15,17 @@ object Main extends App {
       _         <- putStrLn(arguments.toString)
     } yield ())
       .foldM(
-        es => putStrLnErr("Errors:\n") *> putStrLnErr(es.mkString("\n")),
+        es =>
+          for {
+            _ <- putStrLnErr("Errors:")
+            _ <- putStrLnErr(es.mkString("\n"))
+            _ <- putStrLnErr("\nFormat:")
+            _ <- putStrLnErr(
+                  "<path-to-xml> <chapter-silence-duration>" +
+                    " <partition-threshold-duration> <part-silence-duration>"
+                )
+            _ <- putStrLnErr("where duration is an ISO 8601 duration string")
+          } yield (),
         _ => ZIO.unit
       )
 }
