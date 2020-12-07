@@ -9,31 +9,31 @@ import zio.nio.file.Files
 import zio.prelude.Validation
 
 final case class Arguments private (
-  path: Path,
+  pathToXml: Path,
   chapterSilence: Duration,
   partitionThreshold: Duration,
   partSilence: Duration
 )
 
 object Arguments {
-  def from(args: List[String]): ZIO[Blocking, Iterable[String], Arguments] = {
+  def parse(args: List[String]): ZIO[Blocking, Iterable[String], Arguments] = {
     implicit val argsLifted = args.lift
     for {
       tuples <- ZIO
                  .tupled(
-                   checkPath.either.map(Validation.fromEither),
-                   checkChapterSilence.either.map(Validation.fromEither),
-                   checkPartitionThreshold.either.map(Validation.fromEither),
-                   checkPartSilenceExists.either.map(Validation.fromEither)
+                   toValidation(checkPath),
+                   toValidation(checkChapterSilence),
+                   toValidation(checkPartitionThreshold),
+                   toValidation(checkPartSilenceExists)
                  )
                  .flatMap {
                    case (a, b, c, d) =>
                      Validation.tupledPar(a, b, c, d).toZIO.mapError(_.toIterable)
                  }
-      (path, chapterSilence, partitionThreshold, partSilenceStr) = tuples
-
+      (pathToXml, chapterSilence, partitionThreshold, partSilenceStr) = tuples
+      // parsing the part silence duration can only happen after parsing chapter silence
       partSilence <- checkPartSilence(chapterSilence, partSilenceStr).mapError(List(_))
-    } yield Arguments(path, chapterSilence, partitionThreshold, partSilence)
+    } yield Arguments(pathToXml, chapterSilence, partitionThreshold, partSilence)
   }
 
   private def checkPath(implicit args: Int => Option[String]) =
@@ -79,7 +79,13 @@ object Arguments {
       .mapError(_ => s"""Text \"$partSilenceStr\" cannot be parsed to a Duration""")
       .flatMap { partSilence =>
         if (partSilence.compareTo(chapterSilence) < 0) ZIO.succeed(partSilence)
-        else ZIO.fail("Part silence duration should be less than chapter silence duration")
+        else
+          ZIO.fail(
+            s"Part silence duration ${partSilence.toString} should be less " +
+              s"than chapter silence duration ${chapterSilence.toString}"
+          )
       }
 
+  private def toValidation[R, A](check: ZIO[R, String, A]) =
+    check.either.map(Validation.fromEither)
 }

@@ -1,5 +1,7 @@
 package com.github.zalbia.silence
 
+import com.github.plokhotnyuk.jsoniter_scala.core
+
 import zio.{ App, ExitCode, URIO, ZIO }
 import zio.blocking.Blocking
 import zio.console._
@@ -11,9 +13,16 @@ object Main extends App {
 
   private def app(args: List[String]) =
     (for {
-      arguments <- Arguments.from(args)
-      _         <- putStrLn(arguments.toString)
+      arguments <- Arguments.parse(args)
+      segments  = Chapter.readFromXml(arguments).map(Segment.fromChapter).flattenIterables
+      _ <- segments.toIterator
+            .map(_.map(_.getOrElse(???))) // ignore errors to keep things simple
+            .use(writeJson(_))
+            .mapError(e => List(e.getMessage))
     } yield ()).foldM(handleErrors, _ => ZIO.unit)
+
+  private def writeJson(segments: Iterator[Segment]) =
+    ZIO(core.writeToStream(segments, java.lang.System.out))
 
   private def handleErrors(errors: Iterable[String]) =
     for {
