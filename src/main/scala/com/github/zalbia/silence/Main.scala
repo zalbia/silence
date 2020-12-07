@@ -5,6 +5,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core
 import zio.{ App, ExitCode, URIO, ZIO }
 import zio.blocking.Blocking
 import zio.console._
+import zio.stream.ZStream
 
 object Main extends App {
 
@@ -14,15 +15,19 @@ object Main extends App {
   private def app(args: List[String]) =
     (for {
       arguments <- Arguments.parse(args)
-      segments  = Chapter.readFromXml(arguments).map(Segment.fromChapter).flattenIterables
-      _ <- segments.toIterator
-            .map(_.map(_.getOrElse(???))) // ignore errors to keep things simple
-            .use(writeJson(_))
-            .mapError(e => List(e.getMessage))
+      chapters  = Chapters.readFromXml(arguments)
+      segments  = toSegments(chapters)
+      _         <- writeJson(segments)
     } yield ()).foldM(handleErrors, _ => ZIO.unit)
 
-  private def writeJson(segments: Iterator[Segment]) =
-    ZIO(core.writeToStream(segments, java.lang.System.out))
+  private def toSegments(chapters: ZStream[zio.blocking.Blocking, Throwable, Chapter]) =
+    chapters.zipWithIndex.map(a => Segment.fromChapter(a).toIterable).flattenIterables
+
+  private def writeJson(segments: ZStream[Blocking, Throwable, Segment]) =
+    segments.toIterator
+      .map(_.map(_.getOrElse(???))) // ignore errors to keep things simple
+      .use(segments => ZIO(core.writeToStream(segments, java.lang.System.out)))
+      .mapError(e => List(e.getMessage))
 
   private def handleErrors(errors: Iterable[String]) =
     for {

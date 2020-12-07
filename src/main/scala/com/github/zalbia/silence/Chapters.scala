@@ -8,7 +8,7 @@ import zio.stream.ZStream
 final case class Chapter(parts: NonEmptyList[Part])
 final case class Part(offset: Duration)
 
-object Chapter {
+object Chapters {
 
   def readFromXml(args: Arguments): ZStream[Blocking, Throwable, Chapter] = {
     Silence.read(args.pathToXml)
