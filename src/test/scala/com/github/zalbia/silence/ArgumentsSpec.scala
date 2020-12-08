@@ -5,8 +5,8 @@ import zio.test.Assertion._
 import zio.ZIO
 
 object ArgumentsSpec extends DefaultRunnableSpec {
-  def spec = suite("ArgumentsSpec")(
-    testM("valid arguments can be parsed") {
+  def spec = suite("parsing arguments")(
+    testM("works with valid args") {
       assertM(
         Arguments.parse(List("silence1.xml", "PT10S", "PT20M", "PT5S")).run
       )(succeeds(anything))

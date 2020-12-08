@@ -1,7 +1,6 @@
 package com.github.zalbia.silence
 
 import com.github.plokhotnyuk.jsoniter_scala.core
-
 import zio.{ App, ExitCode, URIO, ZIO }
 import zio.blocking.Blocking
 import zio.console._
@@ -15,7 +14,7 @@ object Main extends App {
   private def app(args: List[String]) =
     (for {
       arguments <- Arguments.parse(args)
-      chapters  = Chapters.readFromXml(arguments)
+      chapters  = Chapter.readFromXml(arguments)
       segments  = toSegments(chapters)
       _         <- writeJson(segments)
     } yield ()).foldM(handleErrors, _ => ZIO.unit)
@@ -35,8 +34,8 @@ object Main extends App {
       _ <- putStrLnErr(errors.mkString("\n"))
       _ <- putStrLnErr("\nFormat:")
       _ <- putStrLnErr(
-            "<path-to-xml> <chapter-silence-duration>" +
-              " <partition-threshold-duration> <part-silence-duration>"
+            "<path-to-xml> <chapter-silence-duration> " +
+              "<partition-threshold-duration> <part-silence-duration>"
           )
       _ <- putStrLnErr("where duration is an ISO 8601 duration string")
     } yield ()
