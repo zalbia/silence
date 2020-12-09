@@ -12,7 +12,7 @@ object ChapterSpec extends DefaultRunnableSpec with ChapterSpecHelpers {
           Chapter.fromSilences(dummyDurations, ZStream.empty).runCollect
         )(hasSize(equalTo(1)))
       },
-      testM("are delimited by a given chapter silence") {
+      testM("are split by chapter silence duration") {
         assertChaptersFromSilences(
           Silence("PT15M", "PT15M5S")
         )(
@@ -20,7 +20,7 @@ object ChapterSpec extends DefaultRunnableSpec with ChapterSpecHelpers {
           Chapter(Part("PT15M5S"))
         )
       },
-      testM("when big enough are split into parts") {
+      testM("are split into parts when long enough") {
         assertChaptersFromSilences(
           Silence("PT15M", "PT15M3S"),
           Silence("PT30M", "PT30M5S")
@@ -29,7 +29,14 @@ object ChapterSpec extends DefaultRunnableSpec with ChapterSpecHelpers {
           Chapter(Part("PT30M5S"))
         )
       },
-      testM("aren't split to parts when not big enough") {
+      testM("can be split up if the duration we know from parts is long enough") {
+        assertChaptersFromSilences(
+          Silence("PT30M", "PT30M3S")
+        )(
+          Chapter(Part("PT0S"), Part("PT30M3S"))
+        )
+      },
+      testM("aren't split to parts when not long enough") {
         assertChaptersFromSilences(
           Silence("PT15M", "PT15M3S"),
           Silence("PT20M", "PT20M5S")

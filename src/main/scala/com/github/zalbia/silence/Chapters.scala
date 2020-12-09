@@ -35,25 +35,33 @@ object Chapter {
     import durations._
     (ZStream(Silence.zero) ++ silences
       .filter(silence => isRelevant(silence.duration))).zipWithNext
-      .mapAccum(Chapter.oneParts) {
-        case (list, (_, None)) =>
-          (list, Some(list))
-        case (list, (_, Some(next))) if isChapterSilence(next.duration) =>
-          (NEL(Part(next.until)), Some(list))
-        case (list, (_, Some(next))) =>
-          (NEL.cons(Part(next.until), list), None)
-      }
+      .mapAccum(Chapter.oneParts)(collectChapterParts(isChapterSilence(_)))
       .collect { case Some(l) => Chapter(l.reverse) }
       .zipWithNext
-      .map {
-        case (chapter, None) =>
-          chapter.durationFromParts.fold(chapter) { duration =>
-            if ((duration compareTo partitionThreshold) >= 0) chapter
-            else Chapter(chapter.parts.head)
-          }
-        case (chapter, Some(next)) =>
-          if ((chapter.duration(next.offset) compareTo partitionThreshold) >= 0) chapter
-          else Chapter(chapter.parts.head)
-      }
+      .map(partitionChapters(partitionThreshold))
   }
+
+  private def collectChapterParts(
+    isChapterSilence: Duration => Boolean
+  )(list: NEL[Part], silences: (Silence, Option[Silence])) =
+    (list, silences) match {
+      case (list, (_, None)) =>
+        (list, Some(list))
+      case (list, (_, Some(next))) if isChapterSilence(next.duration) =>
+        (NEL(Part(next.until)), Some(list))
+      case (list, (_, Some(next))) =>
+        (NEL.cons(Part(next.until), list), None)
+    }
+
+  private def partitionChapters(partitionThreshold: Duration)(chapters: (Chapter, Option[Chapter])) =
+    chapters match {
+      case (chapter, None) =>
+        chapter.durationFromParts.fold(chapter) { duration =>
+          if ((duration compareTo partitionThreshold) >= 0) chapter
+          else Chapter(chapter.parts.head)
+        }
+      case (chapter, Some(next)) =>
+        if ((chapter.duration(next.offset) compareTo partitionThreshold) >= 0) chapter
+        else Chapter(chapter.parts.head)
+    }
 }
