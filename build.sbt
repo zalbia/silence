@@ -9,7 +9,6 @@ lazy val library =
       val jsoniter = "2.6.2"
       val xs4sZio = "0.8.2"
       val zio = "1.0.3"
-      val zioConfig = "1.0.0-RC31"
       val zioNio = "1.0.0-RC10"
       val zioPrelude = "1.0.0-RC1"
     }
@@ -19,8 +18,6 @@ lazy val library =
     val xs4sZio = "com.scalawilliam" %% "xs4s-zio" % Version.xs4sZio
 
     val zio = "dev.zio" %% "zio" % Version.zio
-    val zioConfig = "dev.zio" %% "zio-config" % Version.zioConfig
-    val zioConfigMagnolia = "dev.zio" %% "zio-config-magnolia" % Version.zioConfig
     val zioNio = "dev.zio" %% "zio-nio" % Version.zioNio
     val zioPrelude = "dev.zio" %% "zio-prelude" % Version.zioPrelude
     val zioTest = "dev.zio" %% "zio-test" % Version.zio
@@ -41,8 +38,6 @@ lazy val root =
         library.jsoniterMacros,
         library.xs4sZio,
         library.zio,
-        library.zioConfig,
-        library.zioConfigMagnolia,
         library.zioNio,
         library.zioPrelude,
         library.zioTest % Test,
@@ -61,7 +56,7 @@ lazy val settings =
 
 lazy val commonSettings =
   Seq(
-    name := "beat-tech-silence",
+    name := "silence",
     scalaVersion := "2.13.4",
     organization := "com.github.zalbia"
   )
