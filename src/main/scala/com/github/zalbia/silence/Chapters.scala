@@ -53,15 +53,16 @@ object Chapter {
         (NEL.cons(Part(next.until), list), None)
     }
 
-  private def partitionChapters(partitionThreshold: Duration)(chapters: (Chapter, Option[Chapter])) =
+  private def partitionChapters(partitionThreshold: Duration)(chapters: (Chapter, Option[Chapter])) = {
+    def partition(chapter: Chapter, partitionThreshold: Duration)(duration: Duration) =
+      if ((duration compareTo partitionThreshold) >= 0) chapter
+      else Chapter(chapter.parts.head)
+
     chapters match {
       case (chapter, None) =>
-        chapter.durationFromParts.fold(chapter) { duration =>
-          if ((duration compareTo partitionThreshold) >= 0) chapter
-          else Chapter(chapter.parts.head)
-        }
+        chapter.durationFromParts.fold(chapter)(partition(chapter, partitionThreshold))
       case (chapter, Some(next)) =>
-        if ((chapter.duration(next.offset) compareTo partitionThreshold) >= 0) chapter
-        else Chapter(chapter.parts.head)
+        partition(chapter, partitionThreshold)(chapter.duration(next.offset))
     }
+  }
 }
